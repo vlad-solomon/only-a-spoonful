@@ -73,7 +73,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 		if (!connection) return;
 
 		const player = createAudioPlayer();
-		const resource = createAudioResource(path.join(__dirname, "vineboom.mp3"));
+		const resource = createAudioResource(path.join(__dirname, "boom.mp3"));
 
 		player.play(resource);
 		connection.subscribe(player);
