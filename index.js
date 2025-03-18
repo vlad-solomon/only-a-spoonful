@@ -58,9 +58,11 @@ client.on("interactionCreate", async (interaction) => {
 
 const cooldowns = new Map();
 
+const excludedUsers = ["418155005795762206"];
+
 client.on("voiceStateUpdate", async (oldState, newState) => {
 	const userId = newState.member?.id;
-	if (!userId) return;
+	if (!userId || excludedUsers.includes(userId)) return;
 
 	if (oldState.selfDeaf && !newState.selfDeaf) {
 		if (cooldowns.has(userId)) return;
