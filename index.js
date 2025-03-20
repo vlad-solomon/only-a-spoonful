@@ -57,10 +57,15 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 const cooldowns = new Map();
-
 const excludedUsers = ["418155005795762206"];
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
+	const connection = getVoiceConnection(newState.guild.id);
+	if (!connection) return;
+
+	const botChannelId = connection.joinConfig.channelId;
+	if (oldState.channelId !== botChannelId && newState.channelId !== botChannelId) return;
+
 	const userId = newState.member?.id;
 	if (!userId || excludedUsers.includes(userId)) return;
 
@@ -70,13 +75,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 		setTimeout(() => cooldowns.delete(userId), 5000);
 
 		console.log(`Playing Vine Boom sound for ${newState.member.user.tag}`);
-
-		const connection = getVoiceConnection(newState.guild.id);
-		if (!connection) return;
-
 		const player = createAudioPlayer();
 		const resource = createAudioResource(path.join(__dirname, "boom.mp3"));
-
 		player.play(resource);
 		connection.subscribe(player);
 
@@ -86,13 +86,10 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 		});
 	}
 
-	if (oldState.channelId && !newState.channelId) {
-		const connection = getVoiceConnection(oldState.guild.id);
-		if (!connection) return;
-
-		const channel = oldState.guild.channels.cache.get(oldState.channelId);
+	if (oldState.channelId === botChannelId && !newState.channelId) {
+		const channel = oldState.guild.channels.cache.get(botChannelId);
 		if (channel && channel.members.filter((member) => !member.user.bot).size === 0) {
-			console.log("Channel is empty. Disconnecting bot.");
+			console.log("Bot's voice channel is empty. Disconnecting bot.");
 			connection.destroy();
 		}
 	}
